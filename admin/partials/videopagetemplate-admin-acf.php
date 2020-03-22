@@ -54,7 +54,7 @@ acf_add_local_field_group(array(
 				array(
 					array(
 						'field' => 'field_5e735c04abdaa',
-						'operator' => '!=',
+						'operator' => '==',
 						'value' => '1',
 					),
 				),
@@ -81,7 +81,7 @@ acf_add_local_field_group(array(
 				array(
 					array(
 						'field' => 'field_5e735c04abdaa',
-						'operator' => '==',
+						'operator' => '!=',
 						'value' => '1',
 					),
 				),

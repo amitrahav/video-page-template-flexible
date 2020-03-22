@@ -220,9 +220,10 @@ class Videopagetemplate_Admin {
 	 */
 	public function redirect_unregistered_or_wrong_role_users()
 	{
+		global $post;
 		if(!is_user_logged_in() && is_page_template('videopagetemplate-public-display.php')){
 			$redirect = add_query_arg( 'redirected_from_restricted_page_template', get_permalink( $post->ID ), wp_login_url() );
-			wp_safe_redirect( $redirect, 401, 'videopagetemplate' );
+			wp_safe_redirect( $redirect, 307, 'videopagetemplate' );
 			exit;
 		}
 	}

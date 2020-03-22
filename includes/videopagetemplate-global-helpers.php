@@ -8,7 +8,7 @@ function vpt_youtube_id_to_url($id){
 	*/
 	$url = '';
 	if(isset($id) && !empty($id)){
-        $url = `http://www.youtube.com/watch?${id}`;
+        $url = 'http://www.youtube.com/watch?v='. $id;
 	}
 	return $url;
 }
@@ -17,7 +17,7 @@ function vpt_vimeo_id_to_url($id){
 	
 	$url = '';
 	if(isset($id) && !empty($id)){
-        $url = `https://player.vimeo.com/video/?${id}`;
+        $url = 'https://vimeo.com/' . $id;
 	}
 	return $url;
 }
@@ -49,7 +49,7 @@ function vpt_youtube_thumbnail($id, $res){
                 break;
         }
 
-        $url = `http://img.youtube.com/vi/${id}/${res_option}.jpg`;
+        $url = "http://img.youtube.com/vi/$id/$res_option.jpg";
 	}
 	return $url;
 }
@@ -59,8 +59,7 @@ function vpt_vimeo_thumbnail($id){
 	if(isset($id) && !empty($id)){
         $http_response = file_get_contents("http://vimeo.com/api/v2/video/$id.json");
         $json_data = json_decode($http_response);
-        error_log($json_data);
-        $url = $data[0]->thumbnail_medium;
+        $url = $json_data[0]->thumbnail_medium;
 	}
 	return $url;
 }

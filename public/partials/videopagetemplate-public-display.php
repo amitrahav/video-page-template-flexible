@@ -17,8 +17,12 @@
  */
 ?>
 <?php get_header();?>
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
+
+<!-- Open loop for content with gutenberg -->
+<?php  if ( have_posts() ) : while ( have_posts() ) :the_post();?>
+
 <?php // Some vars
+    $unauthorized = false;
     $wrapper_classes = sanitize_html_class(apply_filters('wrapper_classes', ''));
 
     $headline_open_wrapper = apply_filters('headline_open_wrapper', '<h2>');
@@ -27,55 +31,126 @@
     $after_wrapper_begins_html = apply_filters('after_wrapper_begins_html', '');
     $after_video_content = get_field('content_after_video');
     $before_wrapper_ends_html = apply_filters('before_wrapper_ends_html', '');
+    $comments_wrapper_class = apply_filters('comments_wrapper_class','comments-wrapper');
 
     // $video_id = esc_url('nX4vzKH4les');
     $is_vimeo   =  get_field('video_provider');
     $video_id = $is_vimeo? get_field('vimeo_video_id'): get_field('youtube_video_id');
-    $poster = $is_vimeo? vpt_vimeo_thumbnail($video_id) :vpt_youtube_thumbnail($video_id, ''); 
-    $src = $is_vimeo? vpt_vimeo_id_to_url($video_id) :vpt_youtube_id_to_url($video_id);
-
+    $poster = $is_vimeo? vpt_vimeo_thumbnail($video_id) : vpt_youtube_thumbnail($video_id, 'hqdefault'); 
+    $src = $is_vimeo? vpt_vimeo_id_to_url($video_id) : vpt_youtube_id_to_url($video_id);
+    
     // Video build for wp shortcode
     $shortcode_attrs = array(
         'src'=> $src,
-        'height'=>'',
-        'width'=>'',
+        'height'=> 200,
+        'width'=> 500,
         'poster'=> $poster,
-        'loop'=> 0,
-        'autoplay'=> 1,
-        'preload'=> 1,
-        'class'=> '',
+        'loop'=> 'off',
+        'autoplay'=> 'on',
+        'preload'=> 'auto',
+        'class'=> 'd-block',
     );
 
 
     $user = wp_get_current_user();
     $roles = ( array ) $user->roles;
-    $restrict_text = _( apply_filters('role_restrict_text', 'This page is restricted, you need to get' . get_option('user_role_access'). ' if you want to see the content') , 'video_page_template');
+    $restrict_text = _( apply_filters('role_restrict_text', 'This page is restricted, you need to get ' . get_option('user_role_access'). ' role if you want to see the content') , 'video_page_template');
+
+    // Security 
+    $allowed_html = [
+        'a'      => [
+            'href'  => [],
+            'title' => [],
+        ],
+        'br'     => [],
+        'p'      => [],
+        'strong' => [],
+        'h1'     => [
+            'class' => [],
+            'id'    => []
+        ],
+        'h2'     => [
+            'class' => [],
+            'id'    => []
+        ],
+        'h3'     => [
+            'class' => [],
+            'id'    => []
+        ],
+        'h4'     => [
+            'class' => [],
+            'id'    => []
+        ],
+        'h5'     => [
+            'class' => [],
+            'id'    => []
+        ],
+        'h6'     => [
+            'class' => [],
+            'id'    => []
+        ],
+        'div'    => [
+            'class' => [],
+            'id'    => []
+        ],
+    ];
+?>
+
+<?php 
+    if(get_option('restrict_one_session')): // Handle other session if restrict
+        if(get_current_user_id()){
+            $sessions  = WP_Session_Tokens::get_instance( get_current_user_id() );
+            // get current session
+            $token = wp_get_session_token();
+            // destroy everything since we'll be logging in shortly
+            $sessions->destroy_others( $token  );    
+        }else{
+            $unauthorized = true;
+        }
+    endif;
 ?>
 
 <div class="<?= $wrapper_classes ?>">
 
-    <?= wp_kses_data($headline_open_wrapper);?>
+    <?= wp_kses( $headline_open_wrapper, $allowed_html );?>
         <?= the_title();?>
-    <?= wp_kses_data($headline_close_wrapper);?>
+    <?= wp_kses($headline_close_wrapper, $allowed_html);?>
 
-    <?= wp_kses_data($after_wrapper_begins_html);?>
+    <?= wp_kses($after_wrapper_begins_html, $allowed_html);?>
 
     
-    <?php if(get_option('user_role_access') !== 'None' && in_array(get_option('user_role_access'), $roles)){?>
-        <?php the_content();?>
+    <?php if( !$unauthorized  && get_option('user_role_access') == 'None' || ( get_option('user_role_access') != 'None' && in_array( get_option('user_role_access'), $roles))){?>
+
+        <?= the_content();?>
+
         <!-- Open video short code -->
-        <?= wp_video_shortcode($shortcode_attrs) ?>
+        <?php echo wp_video_shortcode($shortcode_attrs); ?>
         <!-- End of Video -->
 
-        <?= esc_html($after_video_content);?>
+        <?= apply_filters( 'the_content', $after_video_content );?>
+
+        <!-- Comments loop -->
+        <?php if ( ( comments_open() || get_comments_number() ) && ! post_password_required() ) :?>
+
+            <div class="<?= $comments_wrapper_class?>">
+
+                <?php comments_template(); ?>
+
+            </div>
+
+        <?php endif; ?>
+
     <?php } else{?>
         <div class="error">
-            <?= esc_html($restrict_text);?>
+            <?= wp_kses($restrict_text, $allowed_html);?>
         </div>
     <?php }?>
         
-    <?= wp_kses_data($before_wrapper_ends_html);?>
+    <?= wp_kses($before_wrapper_ends_html, $allowed_html);?>
 </div>
 
+<!-- End loop -->
+<?php endwhile; endif;?>
 
+<!-- Start footer -->
 <?php get_footer();?>

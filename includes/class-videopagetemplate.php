@@ -177,8 +177,8 @@ class Videopagetemplate {
 
 		$plugin_admin = new Videopagetemplate_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		// $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		// $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		
 		// page template registration
 		$this->loader->add_filter( 'theme_page_templates', $this, 'add_page_template' );
@@ -197,7 +197,7 @@ class Videopagetemplate {
 
 		// Handle single session
 		if(get_option('restrict_one_session')){
-			$this->loader->add_filter( 'login_redirect', $plugin_admin, 'login_from_page_template_remove_sessions' ); // Remove all other sessions
+			$this->loader->add_filter( 'login_redirect', $plugin_admin, 'auth_from_page_template_remove_sessions' ); // Remove all other sessions
 		}
 
 		// Handle role restrictions
@@ -306,8 +306,8 @@ class Videopagetemplate {
 
 		$plugin_public = new Videopagetemplate_Public( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+		// $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 	}
 
 	/**
